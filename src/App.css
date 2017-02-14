@@ -1,0 +1,26 @@
+.app {
+  width: 50vw;
+  height: 50vh;
+  margin: auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.controls {
+  width: 100px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.controls .controls-key {
+  display: flex;
+  justify-content: space-around;
+}
+
+.code-box .text-field {
+  height: 200px;
+  width: 200px;
+}
