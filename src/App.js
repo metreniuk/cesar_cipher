@@ -3,6 +3,7 @@ import './App.css';
 
 import CodeBox from './CodeBox';
 import Controls from './Controls';
+import map from './map';
 
 class App extends Component {
   constructor() {
@@ -32,9 +33,24 @@ class App extends Component {
   }
 
   onEncryptClick() {
-    console.log('hi');
     const { encryptText } = this.state;
-    this.setState({ decryptText: encryptText })
+    const decryptText = this.decrypt(encryptText);
+    this.setState({ decryptText })
+  }
+
+  decrypt(encryptText) {
+    const k = +this.state.codeKey;
+    let x;
+    const result = encryptText.split('').map(lt => {
+      for (let i in map.letters) {
+        if (map.letters[i] === lt) {
+          x = i;
+        }
+      }
+      let Ek = (x + k) % 26;
+      return map.letters[Ek];
+    });
+    return result.join('');
   }
 
   render() {
