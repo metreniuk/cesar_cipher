@@ -4,6 +4,7 @@ import './App.css';
 import CodeBox from './CodeBox';
 import Controls from './Controls';
 import map from './map';
+const englishWords = require('./words.json');
 
 class App extends Component {
   constructor() {
@@ -18,6 +19,7 @@ class App extends Component {
     this.onChangeEncryptText = this.onChangeEncryptText.bind(this);
     this.onChangeDecryptText = this.onChangeDecryptText.bind(this);
     this.onEncryptClick = this.onEncryptClick.bind(this);
+    this.onDecryptClick = this.onDecryptClick.bind(this);
   }
 
   onChangeEncryptText(e) {
@@ -34,23 +36,80 @@ class App extends Component {
 
   onEncryptClick() {
     const { encryptText } = this.state;
-    const decryptText = this.decrypt(encryptText);
+    const decryptText = this.encrypt(encryptText);
     this.setState({ decryptText })
   }
 
-  decrypt(encryptText) {
+  encrypt(encryptText) {
     const k = +this.state.codeKey;
     let x;
-    const result = encryptText.split('').map(lt => {
-      for (let i in map.letters) {
-        if (map.letters[i] === lt) {
-          x = i;
+    let encryptWords = encryptText.split(' ');
+    let result = [];
+    encryptWords.map(word => {
+      let decryptedWord = word.split('').map(lt => {
+        for (let i in map.letters) {
+          if (map.letters[i] === lt) {
+            x = i;
+          }
         }
-      }
-      let Ek = (x + k) % 26;
-      return map.letters[Ek];
+        let Ek = (x + k) % 26;
+        return map.letters[Ek];
+      });
+      result.push(decryptedWord.join(''));
     });
-    return result.join('');
+    return result.join(' ');
+  }
+
+  onDecryptClick() {
+    const { decryptText } = this.state;
+    const encryptText = this.decrypt(decryptText);
+    this.setState({ encryptText })
+  }
+
+  decrypt(decryptText) {
+    let y, counter = 0;
+    let encryptedWords = decryptText.split(' ');
+    let decryptedWords = [];
+    let guess;
+
+    encryptedWords.forEach(word => {
+      let lettersY = [];
+      word.split('').forEach(lt => {
+        for (let i in map.letters) {
+          if (map.letters[i] === lt) {
+            lettersY.push(i)
+          }
+        }
+      });
+
+      for (let k = 1; k < 26; k++) {
+        let decryptedWord = lettersY.map(y => {
+          let Dk;
+          (y - k) < 0 ? Dk = 26 - Math.abs(y - k) : Dk = (y - k) % 26;
+          return map.letters[Dk];
+        });
+        decryptedWord = decryptedWord.join('');
+        decryptedWords[k] ? decryptedWords[k] = decryptedWords[k] : decryptedWords[k] = [];
+        decryptedWords[k].push(decryptedWord);
+      }
+    });
+
+    for (let j = 1; j < 26; j ++) {
+      decryptedWords[j].forEach(word => {
+        for (let i in englishWords) {
+          if (word === englishWords[i]) {
+            counter++;
+          }
+        }
+        if (counter > 1) {
+          guess = j;
+          counter = 0;
+        }
+      })
+    }
+
+    console.log(`The key is ${guess}`);
+
   }
 
   render() {
@@ -66,6 +125,7 @@ class App extends Component {
           codeKey={this.state.key}
           onChangeKey={this.onChangeKey}
           onEncryptClick={this.onEncryptClick}
+          onDecryptClick={this.onDecryptClick}
         />
 
         <CodeBox

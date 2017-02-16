@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Controls = ({ codeKey, onChangeKey, onEncryptClick }) => {
+const Controls = ({ codeKey, onChangeKey, onEncryptClick, onDecryptClick }) => {
   return (
     <div className="controls">
       <button id="encrypt" onClick={onEncryptClick} > Encrypt </button>
@@ -11,7 +11,7 @@ const Controls = ({ codeKey, onChangeKey, onEncryptClick }) => {
                onChange={onChangeKey}
         />
       </div>
-      <button id="decrypt"> Decrypt </button>
+      <button id="decrypt" onClick={onDecryptClick}> Decrypt </button>
     </div>
   )
 };
