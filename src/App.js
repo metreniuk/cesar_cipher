@@ -11,9 +11,10 @@ class App extends Component {
     super();
     this.state = {
       text: "",
-      codeKey: 1,
+      codeKey: 4,
       encryptText: "",
       decryptText: "",
+      results: ""
     };
     this.onChangeKey = this.onChangeKey.bind(this);
     this.onChangeEncryptText = this.onChangeEncryptText.bind(this);
@@ -48,11 +49,7 @@ class App extends Component {
     let result = [];
     encryptWords.forEach(word => {
       let decryptedWord = word.split('').map(lt => {
-        for (let i in map.letters) {
-          if (map.letters[i] === lt) {
-            x = +i;
-          }
-        }
+        x = getLetterId(lt, map.letters);
         let Ek = mod(x + k, 26);
         return map.letters[Ek];
       });
@@ -63,13 +60,18 @@ class App extends Component {
 
   onDecryptClick() {
     const { decryptText } = this.state;
-    const encryptText = this.decrypt(decryptText);
-    // this.setState({ encryptText })
+    const { res, j } = this.decrypt(decryptText);
+    this.setState({
+      encryptText: res,
+      codeKey: j,
+      results: res
+    });
+    console.log(j);
   }
 
   decrypt(decryptText) {
     decryptText = decryptText.toLowerCase();
-    let y, counter = 0;
+    let y, matchedWords = [];
     let encryptedWords = decryptText.split(' ');
     let decryptedWords = [];
     let guess;
@@ -87,8 +89,8 @@ class App extends Component {
       for (let k = 1; k < 26; k++) {
         let decryptedWord = lettersY.map(y => {
           let Dk;
-          (y - k) < 0 ? Dk = 26 - Math.abs(y - k) : Dk = (y - k) % 26;
-          // Dk = mod(y - k, 26);
+          // (y - k) < 0 ? Dk = 26 - Math.abs(y - k) : Dk = (y - k) % 26;
+          Dk = mod(y - k, 26);
           return map.letters[Dk];
         });
         decryptedWord = decryptedWord.join('');
@@ -101,41 +103,46 @@ class App extends Component {
       decryptedWords[j].forEach(word => {
         for (let i in englishWords) {
           if (word === englishWords[i]) {
-            counter++;
+            matchedWords.push(word);
           }
         }
       });
-      if (counter > 3) {
+      if (matchedWords.length >= encryptedWords.length * 0.1) {
+        console.log(matchedWords);
+        console.log(encryptedWords.length * 0.1);
         guess = j;
-        decryptByKey(decryptedWords[j], j);
-        counter = 0;
+        const res = decryptByKey(encryptedWords, j);
+        return { res, j};
       }
+      matchedWords = [];
     }
-    console.log(`The key is ${guess}`);
-
   }
 
   render() {
     return (
       <div className="app">
-        <CodeBox
-          type="encrypt-field"
-          encryptText={this.state.encryptText}
-          onChangeEncryptText={this.onChangeEncryptText}
-        />
+        <div className="main">
+          <CodeBox
+              type="encrypt-field"
+              encryptText={this.state.encryptText}
+              onChangeEncryptText={this.onChangeEncryptText}
+          />
 
-        <Controls
-          codeKey={this.state.key}
-          onChangeKey={this.onChangeKey}
-          onEncryptClick={this.onEncryptClick}
-          onDecryptClick={this.onDecryptClick}
-        />
+          <Controls
+              codeKey={this.state.codeKey}
+              onChangeKey={this.onChangeKey}
+              onEncryptClick={this.onEncryptClick}
+              onDecryptClick={this.onDecryptClick}
+          />
 
-        <CodeBox
-          type="decrypt-field"
-          decryptText={this.state.decryptText}
-          onChangeDecryptText={this.onChangeDecryptText}
-        />
+          <CodeBox
+              type="decrypt-field"
+              decryptText={this.state.decryptText}
+              onChangeDecryptText={this.onChangeDecryptText}
+          />
+        </div>
+        <h3>The key: {this.state.codeKey}</h3>
+        <p>{this.state.results}</p>
       </div>
     );
   }
@@ -155,12 +162,20 @@ function decryptByKey(encryptedWords, k) {
     });
     result.push(decryptedWord.join(''));
   });
-  console.log(result.join(' '));
-  return result.join(' ');
+  result = result.join(' ');
+  return result;
 }
 
 function mod(n, m) {
   return ((n % m) + m) % m;
+}
+
+function getLetterId(lt, letters) {
+  for (let i in letters) {
+    if (letters[i] === lt) {
+      return +i;
+    }
+  }
 }
 
 export default App;

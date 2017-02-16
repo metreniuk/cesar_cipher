@@ -6,7 +6,7 @@ const Controls = ({ codeKey, onChangeKey, onEncryptClick, onDecryptClick }) => {
       <button id="encrypt" onClick={onEncryptClick} > Encrypt </button>
       <div className="controls-key">
         <label htmlFor="key">Key:</label>
-        <input type="number" id="key" min="1" max="26"
+        <input id="key" min="1" max="26"
                value={codeKey}
                onChange={onChangeKey}
         />
