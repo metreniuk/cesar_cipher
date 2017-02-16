@@ -42,17 +42,18 @@ class App extends Component {
 
   encrypt(encryptText) {
     const k = +this.state.codeKey;
+    encryptText = encryptText.toLowerCase();
     let x;
     let encryptWords = encryptText.split(' ');
     let result = [];
-    encryptWords.map(word => {
+    encryptWords.forEach(word => {
       let decryptedWord = word.split('').map(lt => {
         for (let i in map.letters) {
           if (map.letters[i] === lt) {
-            x = i;
+            x = +i;
           }
         }
-        let Ek = (x + k) % 26;
+        let Ek = mod(x + k, 26);
         return map.letters[Ek];
       });
       result.push(decryptedWord.join(''));
@@ -63,10 +64,11 @@ class App extends Component {
   onDecryptClick() {
     const { decryptText } = this.state;
     const encryptText = this.decrypt(decryptText);
-    this.setState({ encryptText })
+    // this.setState({ encryptText })
   }
 
   decrypt(decryptText) {
+    decryptText = decryptText.toLowerCase();
     let y, counter = 0;
     let encryptedWords = decryptText.split(' ');
     let decryptedWords = [];
@@ -86,6 +88,7 @@ class App extends Component {
         let decryptedWord = lettersY.map(y => {
           let Dk;
           (y - k) < 0 ? Dk = 26 - Math.abs(y - k) : Dk = (y - k) % 26;
+          // Dk = mod(y - k, 26);
           return map.letters[Dk];
         });
         decryptedWord = decryptedWord.join('');
@@ -101,13 +104,13 @@ class App extends Component {
             counter++;
           }
         }
-        if (counter > 1) {
-          guess = j;
-          counter = 0;
-        }
-      })
+      });
+      if (counter > 3) {
+        guess = j;
+        decryptByKey(decryptedWords[j], j);
+        counter = 0;
+      }
     }
-
     console.log(`The key is ${guess}`);
 
   }
@@ -136,6 +139,28 @@ class App extends Component {
       </div>
     );
   }
+}
+
+function decryptByKey(encryptedWords, k) {
+  let result = [], y;
+  encryptedWords.forEach(word => {
+    let decryptedWord = word.split('').map(lt => {
+      for (let i in map.letters) {
+        if (map.letters[i] === lt) {
+          y = +i;
+        }
+      }
+      let Dk = mod(y - k, 26);
+      return map.letters[Dk];
+    });
+    result.push(decryptedWord.join(''));
+  });
+  console.log(result.join(' '));
+  return result.join(' ');
+}
+
+function mod(n, m) {
+  return ((n % m) + m) % m;
 }
 
 export default App;
